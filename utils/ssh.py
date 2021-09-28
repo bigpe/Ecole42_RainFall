@@ -21,9 +21,11 @@ def connect(user: str, password: str):
         exit()
     return client
 
+
 def get_connect_command(user, password):
     command = f'sshpass -p {password} ssh {user}@{VM_ADDRESS} -p {VM_PORT} -oStrictHostKeyChecking=no'
     return command
+
 
 def get_previous_password():
     current_level = get_current_level()
@@ -119,8 +121,11 @@ def sanitize_token(token_raw: str):
 
 
 def save_token(token):
+    prefix = ''
+    if 'Ressources' in os.getcwd():
+        prefix = '../'
     print_output(token, 'Token to next level')
-    open('../flag', 'w').write(token)
+    open(f'{prefix}flag', 'w').write(token)
 
 
 def download_from(file_name: str):
