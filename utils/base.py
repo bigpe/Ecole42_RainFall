@@ -11,7 +11,7 @@ pipe = subprocess.PIPE
 def get_previous_password():
     current_level = get_current_level()
     previous_level_num = str(int(current_level[-1:]) - 1).zfill(1)
-    previous_level = f'{current_level[:-2]}{previous_level_num}'
+    previous_level = f'{current_level[:-1]}{previous_level_num}'
     password = Path(f'../../').joinpath(previous_level).joinpath('flag').open().read()
     return password
 
@@ -37,7 +37,7 @@ def save_token(token, client=None):
     if 'Ressources' in os.getcwd():
         prefix = '../'
     print_output(token, 'Token to next level')
-    open(f'{prefix}flag', 'w').write(token)
+    open(f'{prefix}flag', 'w').write(token.strip())
     if client:
         client.close()
     save_walkthrough()

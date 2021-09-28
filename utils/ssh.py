@@ -71,11 +71,16 @@ def exec_in_stream(stream, commands, title=None):
     commands_inline = '\n'
     if isinstance(commands, list):
         commands_inline = bytes('\n'.join(commands) + '\n', 'utf-8')
+        for c in commands:
+            print_action(c, stdin=True)
     if isinstance(commands, str):
+        print_action(commands, stdin=True)
         commands_inline = bytes(commands + '\n', 'utf-8')
     output = stream.communicate(input=commands_inline)
     stream.terminate()
-    return output[0].decode('utf-8')
+    if output[0]:
+        return output[0].decode('utf-8')
+    return None
 
 
 def get_token(password):

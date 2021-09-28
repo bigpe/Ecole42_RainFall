@@ -17,12 +17,13 @@ def print_title(text: str):
         print(text)
 
 
-def print_action(text: str):
+def print_action(text: str, stdin=False):
+    title = 'Write line' if stdin else 'Execute command'
     if colored:
-        print(f'{colorama.Fore.CYAN}Execute command: {colorama.Fore.RESET}'
+        print(f'{colorama.Fore.CYAN}{title}: {colorama.Fore.RESET}'
               f'{colorama.Fore.GREEN}{text}{colorama.Fore.RESET}')
     else:
-        print(f'Execute command: {text}')
+        print(f'{title}: {text}')
 
 
 def print_output(text: Union[str, list], prefix: str = None):
