@@ -29,7 +29,7 @@ for line in main_structure:
         print_output(line)
 
 print_title('Func get arg, call atoi to reformat it and call cmp to compare it with 0x1a7(423)')
-print_title('Later execute command and write file')
+print_title('Later execute command or write error')
 print_title('Okay, we obtained the answer - 423 (compare), send it to our binary')
 
 stream = exec_stream('./level0 423', title='Execute binary with expected arg',
@@ -42,7 +42,7 @@ print_title('Level1, nice, find anything in home dir')
 stream = exec_stream('./level0 423', stdin=True, stdout=True, password='level0')
 output = exec_in_stream(stream, 'ls -la /home/user/level1', title='Show home dir files')
 print_output(output)
-print_title('.pass file, it was written in main fun at step 187, read this')
+print_title('.pass file, got it')
 
 stream = exec_stream('./level0 423', stdin=True, stdout=True, password='level0')
 token = exec_in_stream(stream, 'cat /home/user/level1/.pass', title='Read .pass file')
