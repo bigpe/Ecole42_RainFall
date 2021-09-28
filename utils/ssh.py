@@ -1,11 +1,11 @@
 import os
 import subprocess
-from pathlib import Path
 import paramiko
 from paramiko.client import SSHClient
 
+from .base import save_token, get_current_level, get_previous_password, get_current_level_num, dev_null, pipe
 from .config import VM_ADDRESS, VM_PORT
-from .text import print_title, print_action, print_output
+from .text import print_title, print_action
 
 
 def connect(user: str, password: str):
@@ -25,30 +25,6 @@ def connect(user: str, password: str):
 def get_connect_command(user, password):
     command = f'sshpass -p {password} ssh {user}@{VM_ADDRESS} -p {VM_PORT} -oStrictHostKeyChecking=no'
     return command
-
-
-def get_previous_password():
-    current_level = get_current_level()
-    previous_level_num = str(int(current_level[-1:]) - 1).zfill(1)
-    previous_level = f'{current_level[:-2]}{previous_level_num}'
-    password = Path(f'../../').joinpath(previous_level).joinpath('flag').open().read()
-    return password
-
-
-def get_current_level_num():
-    current_level = get_current_level()
-    current_level_num = str(int(current_level[-1:])).zfill(1)
-    return current_level_num
-
-
-def get_current_level():
-    level_dir_index = 0
-    for i, d in enumerate(os.getcwd().split('/')):
-        if 'level' in d:
-            level_dir_index = i
-            break
-    current_level = os.getcwd().split('/')[level_dir_index]
-    return current_level
 
 
 def connect_by_previous():
@@ -78,9 +54,6 @@ def exec_stream(command: str, stdin=False, stderr=False, stdout=False, password=
     user = get_current_level()
     password = password if password else get_previous_password()
     connect_command = get_connect_command(user, password)
-
-    dev_null = open(os.devnull, 'w')
-    pipe = subprocess.PIPE
 
     def pipe_or_null(flag):
         return pipe if flag else dev_null
@@ -120,14 +93,6 @@ def sanitize_token(token_raw: str):
     return token
 
 
-def save_token(token):
-    prefix = ''
-    if 'Ressources' in os.getcwd():
-        prefix = '../'
-    print_output(token, 'Token to next level')
-    open(f'{prefix}flag', 'w').write(token)
-
-
 def download_from(file_name: str):
     command = f'sshpass -p {get_previous_password()} scp -o StrictHostKeyChecking=no -o ' \
               f'UserKnownHostsFile=/dev/null -P {VM_PORT} {get_current_level()}@{VM_ADDRESS}:~/{file_name} .'
@@ -135,3 +100,5 @@ def download_from(file_name: str):
     print_action(command)
     subprocess.call(command.split(' '), stderr=open(os.devnull, 'w'))
     os.chmod(file_name, 0o777)
+
+

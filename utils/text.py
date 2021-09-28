@@ -11,7 +11,6 @@ def disable_color():
 
 
 def print_title(text: str):
-    global colored
     if colored:
         print(f'{colorama.Fore.YELLOW}{text}{colorama.Fore.RESET}')
     else:
@@ -19,7 +18,6 @@ def print_title(text: str):
 
 
 def print_action(text: str):
-    global colored
     if colored:
         print(f'{colorama.Fore.CYAN}Execute command: {colorama.Fore.RESET}'
               f'{colorama.Fore.GREEN}{text}{colorama.Fore.RESET}')
@@ -28,7 +26,6 @@ def print_action(text: str):
 
 
 def print_output(text: Union[str, list], prefix: str = None):
-    global colored
     if prefix:
         prefix = f'{prefix}: '
     else:
@@ -53,7 +50,6 @@ def print_output(text: Union[str, list], prefix: str = None):
 
 
 def print_magic(text: str):
-    global colored
     colors = [
         colorama.Fore.CYAN,
         colorama.Fore.GREEN,

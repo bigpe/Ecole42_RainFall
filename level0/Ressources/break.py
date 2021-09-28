@@ -1,9 +1,9 @@
+import os
 import sys
-
-sys.path.append("../..")
-
-from utils.ssh import exec, connect, exec_in_stream, exec_stream, save_token
+bool('Ressources' in os.getcwd()) if sys.path.append("../") else sys.path.append("../..")
+from utils.ssh import exec, connect, exec_in_stream, exec_stream
 from utils.text import print_output, print_title
+from utils.base import save_token
 
 client = connect('level0', 'level0')
 
@@ -27,7 +27,6 @@ print_title('Many interesting things, cut a little')
 for line in main_structure:
     if 'call' in line or 'cmp' in line:
         print_output(line)
-
 print_title('Func get arg, call atoi to reformat it and call cmp to compare it with 0x1a7(423)')
 print_title('Later execute command or write error')
 print_title('Okay, we obtained the answer - 423 (compare), send it to our binary')
@@ -49,6 +48,4 @@ token = exec_in_stream(stream, 'cat /home/user/level1/.pass', title='Read .pass 
 print_output(token, 'File content')
 print_title('Woo-hoo!')
 
-save_token(token)
-
-client.close()
+save_token(token, client)
