@@ -1,21 +1,17 @@
-#include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/types.h>
+#include <stdlib.h>
 
-int main(int argc, char **argv) {
-    int number = atoi(argv[1]);
-    uid_t uid;
-    gid_t gid;
+void run(void)
+{
+  fwrite("Good... Wait what?\n", 1, 19, stdout);
+  system("/bin/sh");
+  return 0;
+}
 
-    if (number == 423) {
-        setrgid(getegid());
-        setruid(geteuid());
-        execv("/bin/sh", NULL);
-    }
-	else {
-		fwrite("No !\n", 1, 5, stderr);
-    }
-    return 0;
+int main(void)
+{
+  char input[76];
+
+  gets(input);
+  return 0;
 }

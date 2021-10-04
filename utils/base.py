@@ -46,3 +46,20 @@ def save_token(token, client=None):
 def save_walkthrough():
     if os.getcwd().split('/')[-1] == 'Ressources':
         subprocess.Popen('p2j break.py -o -t ../walkthrough.ipynb'.split(' '), stdout=dev_null)
+
+
+def transform_address(address):
+    if isinstance(address, bytes):
+        address = str(address)
+    if ' ' in address:
+        address = address.split(' ')[1]
+    address = address.replace("'", '')
+    address = address[2:]
+    res = []
+    for i, x in enumerate(address):
+        if not i % 2:
+            if len(address) > i + 1:
+                res.append(f'\\x{x}{address[i + 1]}')
+            else:
+                res.append(f'\\x{x}')
+    return ''.join(res[::-1])

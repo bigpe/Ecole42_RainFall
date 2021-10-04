@@ -77,9 +77,14 @@ def exec_in_stream(stream, commands, title=None):
         print_action(commands, stdin=True)
         commands_inline = bytes(commands + '\n', 'utf-8')
     output = stream.communicate(input=commands_inline)
-    stream.terminate()
+    if output[1]:
+        print(output[1])
     if output[0]:
-        return output[0].decode('utf-8')
+        print(output[0])
+        try:
+            return output[0].decode('utf-8')
+        except:
+            return None
     return None
 
 
@@ -105,5 +110,13 @@ def download_from(file_name: str):
     print_action(command)
     subprocess.call(command.split(' '), stderr=open(os.devnull, 'w'))
     os.chmod(file_name, 0o777)
+
+
+def upload_to(file_name: str):
+    command = f'sshpass -p {get_previous_password()} scp -o StrictHostKeyChecking=no -o ' \
+              f'UserKnownHostsFile=/dev/null -P {VM_PORT} {file_name} {get_current_level()}@{VM_ADDRESS}:/tmp/'
+    print_title(f'Upload file {file_name}')
+    print_action(command)
+    subprocess.call(command.split(' '), stderr=open(os.devnull, 'w'))
 
 
