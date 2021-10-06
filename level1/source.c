@@ -5,7 +5,7 @@ void run(void)
 {
   fwrite("Good... Wait what?\n", 1, 19, stdout);
   system("/bin/sh");
-  return 0;
+  return;
 }
 
 int main(void)

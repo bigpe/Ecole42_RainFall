@@ -58,7 +58,7 @@ def exec_stream(command: str, stdin=False, stderr=False, stdout=False, password=
     def pipe_or_null(flag):
         return pipe if flag else dev_null
 
-    command = f"{connect_command} {command}"
+    command = f'{connect_command} {command}'
     print_action(command)
     stream = subprocess.Popen(
         command.split(" "), stderr=pipe_or_null(stderr), stdout=pipe_or_null(stdout), stdin=pipe_or_null(stdin))
@@ -77,10 +77,7 @@ def exec_in_stream(stream, commands, title=None):
         print_action(commands, stdin=True)
         commands_inline = bytes(commands + '\n', 'utf-8')
     output = stream.communicate(input=commands_inline)
-    if output[1]:
-        print(output[1])
     if output[0]:
-        print(output[0])
         try:
             return output[0].decode('utf-8')
         except:

