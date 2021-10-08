@@ -3,7 +3,7 @@ import sys
 bool('Ressources' in os.getcwd()) if sys.path.append("../") else sys.path.append("../..")
 from utils.ssh import exec, connect_by_previous, exec_in_stream, exec_stream, upload_to
 from utils.text import print_output, print_title
-from utils.base import save_token, transform_address
+from utils.base import save_token, address_to_string
 
 client = connect_by_previous()
 
