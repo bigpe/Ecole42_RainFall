@@ -1,21 +1,23 @@
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
+#include <stdio.h>
 #include <unistd.h>
-#include <sys/types.h>
+#define _GNU_SOURCE
 
-int main(int argc, char **argv) {
-    int number = atoi(argv[1]);
-    uid_t uid;
-    gid_t gid;
+int	main(int ac, char **av)
+{
+	int		password;
+	char	*args[2];
 
-    if (number == 423) {
-        setrgid(getegid());
-        setruid(geteuid());
-        execv("/bin/sh", NULL);
-    }
-	else {
-		fwrite("No !\n", 1, 5, stderr);
-    }
-    return 0;
+	password = atoi(av[1]);
+	if (password == 423)
+	{
+		args[0] = strdup("/bin/sh");
+		args[1] = NULL;
+		setresgid(getegid(), getegid(), getegid());
+		setresuid(geteuid(), geteuid(), geteuid());
+		execv("/bin/sh", args);
+	}
+	fwrite("No !\n", 1, 5, stderr);
+	return (0);
 }

