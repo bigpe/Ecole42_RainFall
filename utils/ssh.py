@@ -33,10 +33,11 @@ def connect_by_previous():
     return connect(current_level, password)
 
 
-def exec(client: SSHClient, command: str, title: str = None, err=False, read_method='readlines'):
+def exec(client: SSHClient, command: str, title: str = None, err=False, read_method='readlines', silent=False):
     if title:
         print_title(title)
-    print_action(command)
+    if not silent:
+        print_action(command)
     stdin, stdout, stderr = client.exec_command(command)
     read_from = 'stdout'
     if err:
@@ -169,5 +170,6 @@ def get_func_structure(client, name, binary_name=get_current_level(), title=None
     print_output(structure)
     if title:
         print_title(title)
+    return structure
 
 

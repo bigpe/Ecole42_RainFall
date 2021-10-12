@@ -1,8 +1,17 @@
 #!/bin/bash
 
+p=$(pwd)
+
 i=0
-for f in `find $(pwd) -name "Ressources" | sort`; do
+for f in `find $(find $p -name "level*") -name "Ressources" | sort`; do
     printf "\nLevel - $i\n\n"
+    cd $f && python3 break.py
+    i=$((i+1))
+done
+
+i=0
+for f in `find $(find $p -name "bonus*") -name "Ressources" | sort`; do
+    printf "\nBonus - $i\n\n"
     cd $f && python3 break.py
     i=$((i+1))
 done

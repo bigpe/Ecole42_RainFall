@@ -10,11 +10,11 @@ def disable_color():
     colored = False
 
 
-def print_title(text: str):
+def print_title(text: str, end='\n'):
     if colored:
-        print(f'{colorama.Fore.YELLOW}{text}{colorama.Fore.RESET}')
+        print(f'{colorama.Fore.YELLOW}{text}{colorama.Fore.RESET}', end=end)
     else:
-        print(text)
+        print(text, end=end)
 
 
 def print_action(text: str, stdin=False):

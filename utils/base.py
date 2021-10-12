@@ -28,7 +28,7 @@ def get_current_level_num():
 def get_current_level():
     level_dir_index = 0
     for i, d in enumerate(os.getcwd().split('/')):
-        if 'level' in d:
+        if 'level' in d or 'bonus' in d:
             level_dir_index = i
             break
     current_level = os.getcwd().split('/')[level_dir_index]
