@@ -4,18 +4,24 @@ from pathlib import Path
 
 from utils.text import print_output
 
-dev_null = open(os.devnull, 'w')
-pipe = subprocess.PIPE
+DEV_NULL = open(os.devnull, 'w')
+PIPE = subprocess.PIPE
+PATTERN = 'AAAABBBBCCCCDDDDEEEEFFFFGGGGHHHHIIIIJJJJKKKKLLLLMMMMNNNNOOOOPPPPQQQQRRRRSSSSTTTT' \
+          'UUUUVVVVWWWWXXXXYYYYZZZZaaaabbbbccccddddeeeeffffgggghhhhiiiijjjjkkkkllll' \
+          'mmmmnnnnooooppppqqqqrrrrssssttttuuuuvvvvwwwwxxxxyyyyzzzz'
 
 
 def get_previous_password():
-    prefix = '../'
-    if 'Ressources' in os.getcwd():
-        prefix = '../../'
-    current_level = get_current_level()
-    previous_level_num = str(int(current_level[-1:]) - 1).zfill(1)
-    previous_level = f'{current_level[:-1]}{previous_level_num}'
-    password = Path(f'{prefix}').joinpath(previous_level).joinpath('flag').open().read()
+    try:
+        prefix = '../'
+        if 'Ressources' in os.getcwd():
+            prefix = '../../'
+        current_level = get_current_level()
+        previous_level_num = str(int(current_level[-1:]) - 1).zfill(1)
+        previous_level = f'{current_level[:-1]}{previous_level_num}'
+        password = Path(f'{prefix}').joinpath(previous_level).joinpath('flag').open().read()
+    except FileNotFoundError:
+        return None
     return password
 
 
@@ -52,7 +58,7 @@ def save_token(token, client=None):
 
 def save_walkthrough():
     if os.getcwd().split('/')[-1] == 'Ressources':
-        subprocess.Popen('p2j break.py -o -t ../walkthrough.ipynb'.split(' '), stdout=dev_null)
+        subprocess.Popen('p2j break.py -o -t ../walkthrough.ipynb'.split(' '), stdout=DEV_NULL)
 
 
 def address_to_string(address):

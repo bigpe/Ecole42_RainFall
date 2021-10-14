@@ -3,7 +3,7 @@ import subprocess
 import paramiko
 from paramiko.client import SSHClient
 
-from .base import save_token, get_current_level, get_previous_password, get_current_level_num, dev_null, pipe
+from .base import save_token, get_current_level, get_previous_password, get_current_level_num, DEV_NULL, PIPE, PATTERN
 from .config import VM_ADDRESS, VM_PORT
 from .text import print_title, print_action, print_output
 
@@ -46,6 +46,7 @@ def exec(client: SSHClient, command: str, title: str = None, err=False, read_met
     def read(stdin, stdout, stderr):
         return [line.strip() if read_method == 'readlines' else line for line in
                 getattr(locals()[read_from], read_method)()]
+
     return read(stdin, stdout, stderr)
 
 
@@ -57,7 +58,7 @@ def exec_stream(command: str, stdin=False, stderr=False, stdout=False, password=
     connect_command = get_connect_command(user, password)
 
     def pipe_or_null(flag):
-        return pipe if flag else dev_null
+        return PIPE if flag else DEV_NULL
 
     command = f'{connect_command} {command}'
     print_action(command)
@@ -101,8 +102,8 @@ def sanitize_token(token_raw: str):
     return token
 
 
-def download_from(file_name: str):
-    command = f'sshpass -p {get_previous_password()} scp -o StrictHostKeyChecking=no -o ' \
+def download_from(file_name: str, password=get_previous_password()):
+    command = f'sshpass -p {password} scp -o StrictHostKeyChecking=no -o ' \
               f'UserKnownHostsFile=/dev/null -P {VM_PORT} {get_current_level()}@{VM_ADDRESS}:~/{file_name} .'
     print_title(f'Download file {file_name}')
     print_action(command)
@@ -142,14 +143,16 @@ def get_func_address(client, name, binary_name=get_current_level()):
     return address
 
 
-def find_offset(client, binary_name=get_current_level(), title=None, register='eip'):
+def find_offset(client, binary_name=get_current_level(), title=None, register='eip', pattern=PATTERN, env=None,
+                stdin=False):
     if title:
         print_title(title)
-    test_string = 'AAAABBBBCCCCDDDDEEEEFFFFGGGGHHHHIIIIJJJJKKKKLLLLMMMMNNNNOOOOPPPPQQQQRRRRSSSSTTTT' \
-                  'UUUUVVVVWWWWXXXXYYYYZZZZaaaabbbbccccddddeeeeffffgggghhhhiiiijjjjkkkkllll' \
-                  'mmmmnnnnooooppppqqqqrrrrssssttttuuuuvvvvwwwwxxxxyyyyzzzz'
-    address = exec(client, f'echo "r {test_string}\ni r" | '
-                           f'gdb ./{binary_name} -q | '
+    stdin_prefix = f'echo "{pattern}" | '
+    address = exec(client, f'echo "y" | {stdin_prefix if stdin else ""}'
+                           f'{env if env else ""} gdb ./{binary_name} -q '
+                           f'-ex "r{"" if stdin else f" {pattern}"} " '
+                           f'-ex "i r" '
+                           f'-ex "q" | '
                            f'grep "{register}" | '
                            f'sed \'s/(gdb)//\' | '
                            f'awk \'{{print $2}}\''
@@ -171,5 +174,3 @@ def get_func_structure(client, name, binary_name=get_current_level(), title=None
     if title:
         print_title(title)
     return structure
-
-
