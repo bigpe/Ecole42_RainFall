@@ -1,6 +1,6 @@
 ## RainFall
 
-Reverse binaries
+Reverse binaries and find exploits
 
 [Download image](https://projects.intra.42.fr/uploads/document/document/2087/RainFall.iso) (Ubuntu Linux)
 
@@ -49,7 +49,7 @@ Run one by one, e.g.
 cd level09/Ressources && python3 break.py
 ```
 
-Or run step by step by Jupyter
+Or run step by step by Jupyter, e.g.
 ```shell
 cd level09 && ./preview
 ```
