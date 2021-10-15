@@ -59,4 +59,5 @@ print_output(output, 'Current user')
 print_title('Nice')
 
 token = exec(client, f('cat /home/user/level6/.pass'), title='Steal the password!')[0]
+
 save_token(token, client)
