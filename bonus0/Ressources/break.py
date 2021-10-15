@@ -6,7 +6,8 @@ from utils.ssh import exec, connect, get_func_address, get_func_structure
 from utils.text import print_output, print_title
 from utils.base import save_token, address_to_string
 
-password = open('../../level9/flag').read()
+prefix = '../..' if bool('Ressources' in os.getcwd()) else '..'
+password = open(f'{prefix}/level9/flag').read()
 client = connect('bonus0', password)
 
 
