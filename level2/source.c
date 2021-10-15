@@ -2,22 +2,24 @@
 #include <stdlib.h>
 #include <string.h>
 
-void p(void) {
-	unsigned int	check;
-	char			input[76];
+char	*p(void)
+{
+	char	buffer[64];
+	void	*return_address;
 
-    fflush(stdout);
-    gets(input);
-    if ((check & 0xb0000000) == 0xb0000000) {
-        printf("(%p)\n", check);
-        exit(1);
-    }
-    puts(input);
-    strdup(input);
-    return;
+	fflush(stdout);
+	gets(buffer);
+	return_address = __builtin_return_address(0);
+	if (((unsigned int)return_address & 0xb0000000) == 0xb0000000)
+	{
+		printf("(%p)\n", return_address);
+		exit(1);
+	}
+	puts(buffer);
+	return (strdup(buffer));
 }
 
-int main(void) {
-	p();
-	return 0;
+int	main(void)
+{
+	return (int)p();
 }

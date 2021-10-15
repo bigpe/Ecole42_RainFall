@@ -2,10 +2,9 @@ import os
 import sys
 
 bool('Ressources' in os.getcwd()) if sys.path.append("../") else sys.path.append("../..")
-from utils.ssh import exec, connect, find_offset, get_func_address, get_func_structure, exec_stream, \
-    exec_in_stream, download_from
-from utils.text import print_output, print_title, print_action
-from utils.base import save_token, get_buffer_overflow_command, address_to_string, PATTERN
+from utils.ssh import exec, connect, get_func_address, get_func_structure
+from utils.text import print_output, print_title
+from utils.base import save_token, address_to_string
 
 password = open('../../level9/flag').read()
 client = connect('bonus0', password)
